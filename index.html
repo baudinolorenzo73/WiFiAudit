@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#03050b">
+  <meta name="wifiaudit-token" content="__TOKEN__">
+  <meta name="wifiaudit-version" content="1.7.0">
+  <title>WiFiAudit — Pannello Kali</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" type="image/svg+xml" href="./icons/icon.svg">
+  <link rel="stylesheet" href="./app.css?v=1.7.0">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand-mark" aria-hidden="true"><span>W</span><span>A</span></div>
+    <div class="brand-copy"><p class="eyebrow">SECURE // LOCAL // KALI</p><h1 class="glitch" data-text="WiFiAudit">WiFiAudit</h1><p class="subtitle">CONTROL DECK v1.7.0 <span class="cursor">_</span></p></div>
+    <span id="serverState" class="pill pending">controllo…</span>
+  </header>
+
+  <main>
+    <section class="notice"><strong>Solo reti autorizzate.</strong> Il pannello non salva la password di sudo: quando necessaria, Kali la richiede nel terminale.</section>
+
+    <section id="webPreview" class="web-preview" hidden>
+      <div><p class="eyebrow magenta">GITHUB PAGES // ANTEPRIMA WEB</p><h2>Modalità pubblicata</h2><p>Qui puoi consultare la guida, copiare i comandi e scaricare il pacchetto. Per avviare Bash, strumenti radio e <code>sudo</code> devi estrarre lo ZIP su Kali e usare <code>./avvia_pannello.sh</code>.</p></div>
+      <div class="web-actions"><a class="button primary button-link" href="./WiFiAudit_Kali_v6.0_Cyberpunk_v1.7.zip" download>Scarica pacchetto Kali</a><a class="button secondary button-link" href="#comandi">Vai ai comandi</a></div>
+    </section>
+
+    <section class="hero-grid">
+      <article class="card primary-card"><p class="card-kicker">Avvio consigliato</p><h2>Menu completo</h2><p>Scansione, scelta rete, metodi di audit, report e sessioni.</p><button class="button primary" data-action="menu">Apri WiFiAudit</button></article>
+      <article class="card"><p class="card-kicker">Singolo obiettivo</p><h2>Procedura guidata</h2><p>Richiede BSSID, canale e profilo prima dell'esecuzione.</p><button class="button" data-action="guided">Avvia guidata</button></article>
+      <article class="card"><p class="card-kicker">Controllo ambiente</p><h2>Diagnostica</h2><p>Inventario strumenti e interfacce, senza attivare la radio.</p><div class="button-row"><button class="button secondary" data-action="doctor">Doctor</button><button class="button secondary" data-action="selftest">Autotest</button></div></article>
+    </section>
+
+    <section class="section-block" id="netpwn">
+      <div class="section-heading"><div><p class="eyebrow magenta">NETPWN // DEMO LAB</p><h2>Topologia ed eventi simulati</h2></div><span class="muted">Integrazione opzionale</span></div>
+      <div class="form-card">
+        <p>Prova la dashboard NetPwn con una rete fittizia in una scheda separata. La preparazione scarica il progetto ufficiale e installa le dipendenze in un ambiente Python dedicato. Attendi il completamento nel terminale prima dell'avvio.</p>
+        <div class="button-row spaced"><button class="button secondary" data-action="netpwn_install">1. Prepara NetPwn</button><button class="button" data-action="netpwn_demo">2. Avvia demo</button><button class="button secondary" id="netpwnOpen">3. Apri dashboard</button><button class="button secondary" data-action="netpwn_stop">Ferma demo</button></div>
+        <p class="field-help">Avvio senza sudo, con dati sintetici e porta locale 8877. “Ferma demo” arresta solo la demo avviata da questa integrazione. Stato degli avvii in Mission Control. Se manca un requisito installa git e python3-venv dal Centro installazioni.</p>
+        <p class="field-help">Revisione fissata: <code>c409bda64590</code>. <a href="https://github.com/letox4/netpwn" target="_blank" rel="noopener noreferrer">Repository e licenza GPL-3.0 ↗</a>. Questa integrazione gestisce il programma esterno: non importa dati né incorpora il suo codice. La demo è una funzione del progetto esterno, non un isolamento del sistema.</p>
+      </div>
+    </section>
+
+    <section class="section-block" id="dashboard">
+      <div class="section-heading"><div><p class="eyebrow magenta">MISSION CONTROL</p><h2>Attività e storico</h2></div><button class="link-button" id="dashboardRefresh">Aggiorna attività</button></div>
+      <div class="form-card">
+        <label class="toggle-label"><input type="checkbox" id="dryRun"> Simula i prossimi avvii (nessun comando eseguito)</label>
+        <p class="field-help">Stato e durata si aggiornano durante l'esecuzione. Il codice di uscita descrive il processo; per l'esito dell'audit consulta il report. Per interrompere usa Ctrl+C nel terminale.</p>
+        <div id="jobList" class="job-list" aria-live="polite">Nessuna attività caricata.</div>
+        <pre id="commandPreview" class="output-box" hidden></pre>
+      </div>
+      <div class="two-columns spaced">
+        <article class="form-card"><h3>Importa scansione</h3><label for="scanPath">CSV airodump-ng (max 10 MiB)</label><input id="scanPath" type="text" placeholder="/home/utente/wifiaudit_results/session_.../scan-01.csv"><button class="button spaced" id="importScan">Importa nello storico</button><button class="button secondary spaced" id="demoScans">Carica esempio dimostrativo</button><p class="field-help">Gli esempi sono sintetici e restano separati dai dati reali.</p></article>
+        <article class="form-card"><h3>Sessioni su disco</h3><label for="resultsRoot">Cartella risultati accessibile all'utente</label><input id="resultsRoot" type="text" placeholder="/home/utente/wifiaudit_results"><button class="button spaced" id="loadSessions">Cerca sessioni</button><div id="sessionList" class="job-list"></div></article>
+      </div>
+      <div class="form-card spaced">
+        <h3>Confronto osservazioni e rapporto PDF</h3>
+        <div class="two-columns"><div><label for="snapshotBefore">Prima</label><select id="snapshotBefore"></select></div><div><label for="snapshotAfter">Dopo / rapporto</label><select id="snapshotAfter"></select></div></div>
+        <div class="button-row spaced"><button class="button" id="compareScans">Confronta scansioni</button><button class="button secondary" id="pdfReport">Scarica rapporto PDF</button></div>
+        <pre id="diffOutput" class="output-box" hidden></pre>
+      </div>
+    </section>
+
+    <section class="section-block two-columns">
+      <article class="form-card"><p class="eyebrow">KISMET // READ ONLY</p><h2>Inventario wireless</h2><label for="kismetPort">Porta locale Kismet</label><input id="kismetPort" type="number" value="2501" min="1024" max="65535"><label for="kismetKey">Chiave API con ruolo readonly</label><input id="kismetKey" type="password" autocomplete="off" spellcheck="false" placeholder="Usata solo per questa richiesta"><button class="button spaced" id="importKismet">Leggi AP da Kismet</button><p class="field-help">La chiave viene cancellata dal campo dopo l'uso. Legge l'inventario di Kismet già avviato sullo stesso computer.</p></article>
+      <article class="form-card"><p class="eyebrow">HARDWARE CHECK</p><h2>Capacità dichiarate</h2><button class="button" id="hardwareCheck">Verifica interfacce</button><pre id="hardwareOutput" class="output-box" hidden></pre><p class="field-help">Rileva interfacce e monitor mode dichiarata dal driver. Il test di injection e la stabilità richiedono una prova hardware.</p></article>
+    </section>
+
+    <section class="section-block">
+      <div class="section-heading"><div><p class="eyebrow magenta">SECURITY TOOLCHAIN</p><h2>Strumenti principali</h2></div><span class="muted">Ruoli distinti, flusso coordinato</span></div>
+      <div class="toolchain-grid">
+        <article class="toolchain-card"><span>01</span><h3>Aircrack-ng</h3><p>Cattura, verifica handshake e funzioni 802.11 usate dal motore.</p></article>
+        <article class="toolchain-card"><span>02</span><h3>Kismet</h3><p>Rilevamento passivo, monitoraggio wireless, wardriving e WIDS.</p></article>
+        <article class="toolchain-card"><span>03</span><h3>Hashcat</h3><p>Recupero offline accelerato tramite CPU o GPU.</p></article>
+        <article class="toolchain-card"><span>04</span><h3>John the Ripper</h3><p>Recupero offline alternativo con wordlist, regole e maschere.</p></article>
+        <article class="toolchain-card"><span>05</span><h3>Wireshark</h3><p>Analisi visuale approfondita delle catture e dei protocolli.</p></article>
+        <article class="toolchain-card"><span>06</span><h3>Nmap</h3><p>Inventario di host, porte e servizi dopo l’accesso autorizzato.</p></article>
+        <article class="toolchain-card caution"><span>07</span><h3>Hydra</h3><p>Verifica autorizzata degli accessi ai servizi; non recupera la chiave Wi‑Fi.</p></article>
+        <article class="toolchain-card"><span>08</span><h3>hcxdumptool / hcxtools</h3><p>Acquisizione e conversione di PMKID/EAPOL nei formati di recupero offline.</p></article>
+        <article class="toolchain-card"><span>09</span><h3>Reaver / Pixiewps</h3><p>Valutazione WPS; Pixiewps elabora offline i parametri raccolti.</p></article>
+        <article class="toolchain-card"><span>10</span><h3>Wifite</h3><p>Orchestratore esterno usato soltanto dalla procedura mirata, con target e limiti espliciti.</p></article>
+        <article class="toolchain-card"><span>11</span><h3>tcpdump</h3><p>Analisi testuale e filtraggio delle catture, utile anche senza interfaccia grafica.</p></article>
+        <article class="toolchain-card caution"><span>12</span><h3>Laboratorio avanzato</h3><p>Airgeddon, Bettercap, Fern, MDK4, Wifiphisher e WiFiPumpkin3: installabili, ma senza attacco automatico dal pannello.</p></article>
+      </div>
+      <details class="sudo-help"><summary>Perché alcuni strumenti non hanno il pulsante di attacco?</summary><p>Rogue AP, phishing, MITM e flood possono interrompere servizi o raccogliere dati di terzi. Il pannello permette l'installazione controllata e offre documentazione, ma non costruisce campagne, portali o attacchi massivi. Usali solo in un laboratorio isolato o nello scope scritto dell'audit.</p></details>
+    </section>
+
+    <section class="section-block">
+      <div class="section-heading"><div><p class="eyebrow">OFFLINE</p><h2>Catture e recupero</h2></div><span class="muted">Nessun comando libero</span></div>
+      <div class="form-card">
+        <label for="capturePath">Percorso completo della cattura</label>
+        <input id="capturePath" type="text" spellcheck="false" autocomplete="off" placeholder="/home/utente/wifiaudit_results/session_.../cattura.22000">
+        <div class="split-fields">
+          <div><label for="seconds">Budget recupero</label><select id="seconds"><option value="300">5 minuti</option><option value="600" selected>10 minuti</option><option value="1800">30 minuti</option><option value="3600">1 ora</option><option value="14400">4 ore</option></select></div>
+          <div class="actions-end"><button class="button secondary" id="inspectBtn">Ispeziona</button><button class="button" id="recoverBtn">Recupero offline</button></div>
+        </div>
+        <p class="field-help">Formati ammessi: .cap, .pcap, .pcapng, .22000, .hccapx, .john.</p>
+      </div>
+    </section>
+
+    <section class="section-block two-columns">
+      <article class="form-card"><p class="eyebrow">RIPRESA</p><h2>Continua una sessione</h2><label for="sessionPath">Cartella session_*</label><input id="sessionPath" type="text" spellcheck="false" autocomplete="off" placeholder="/home/utente/wifiaudit_results/session_2026..."><button class="button spaced" id="resumeBtn">Riprendi per fasi</button></article>
+      <article class="form-card"><p class="eyebrow">ARCHIVIO</p><h2>Risultati e documentazione</h2><div class="stack"><button class="button secondary" data-action="catalog">Catalogo sessioni</button><button class="button secondary" data-action="results">Apri cartella risultati</button><button class="button secondary" data-action="manual">Apri manuale PDF</button></div></article>
+    </section>
+
+    <section class="section-block">
+      <div class="section-heading"><div><p class="eyebrow">UTILITÀ KALI</p><h2>File e analisi</h2></div><span class="muted">Avvio come utente normale</span></div>
+      <div id="utilityGrid" class="utility-grid" aria-live="polite"></div>
+      <p class="field-help"><strong>Consiglio:</strong> Double Commander è l'alternativa più vicina a Total Commander: due pannelli, schede, confronto e strumenti integrati.</p>
+    </section>
+
+    <section class="section-block installer-zone">
+      <div class="section-heading">
+        <div><p class="eyebrow magenta">PACKAGE MATRIX</p><h2>Centro installazioni Kali</h2></div>
+        <button class="button secondary apt-update" data-action="apt_update">Aggiorna indici APT</button>
+      </div>
+      <div class="installer-intro">
+        <span class="hud-code">PKG://ALLOWLIST</span>
+        <p>Installa solo ciò che serve. I pacchetti già presenti vengono riconosciuti; ogni gruppo apre un terminale e richiede conferma <code>sudo</code>.</p>
+      </div>
+      <div id="packageGroups" class="package-groups" aria-live="polite"></div>
+    </section>
+
+    <section class="section-block" id="comandi">
+      <div class="section-heading"><div><p class="eyebrow">GUIDA RAPIDA</p><h2>Comandi principali spiegati</h2></div><span class="muted">Tocca Copia</span></div>
+      <div class="command-list">
+        <article class="command"><div><h3>Aprire questo pannello</h3><p>Avvia il server solo locale e apre il browser. Non usare sudo.</p></div><code>./avvia_pannello.sh</code><button class="copy-button" data-copy="./avvia_pannello.sh">Copia</button></article>
+        <article class="command"><div><h3>Menu completo</h3><p>Serve sudo perché monitor mode e strumenti radio richiedono privilegi.</p></div><code>sudo bash wifiaudit.sh --menu</code><button class="copy-button" data-copy="sudo bash wifiaudit.sh --menu">Copia</button></article>
+        <article class="command"><div><h3>Diagnostica</h3><p>Controlla strumenti, versioni e interfacce senza effettuare un audit.</p></div><code>bash wifiaudit.sh --doctor</code><button class="copy-button" data-copy="bash wifiaudit.sh --doctor">Copia</button></article>
+        <article class="command"><div><h3>Test interni</h3><p>Verifica le funzioni pure del programma; non usa radio né root.</p></div><code>bash wifiaudit.sh --self-test</code><button class="copy-button" data-copy="bash wifiaudit.sh --self-test">Copia</button></article>
+        <article class="command"><div><h3>Procedura mirata</h3><p>Guida Wifite su un solo BSSID, con anteprima e conferma.</p></div><code>sudo bash wifiaudit.sh --guided</code><button class="copy-button" data-copy="sudo bash wifiaudit.sh --guided">Copia</button></article>
+        <article class="command"><div><h3>Ispezionare una cattura</h3><p>Calcola hash, riconosce il formato e usa TShark se disponibile.</p></div><code>bash wifiaudit.sh --inspect /percorso/cattura.cap</code><button class="copy-button" data-copy="bash wifiaudit.sh --inspect /percorso/cattura.cap">Copia</button></article>
+        <article class="command"><div><h3>Recupero offline</h3><p>Prova le strategie configurate per 600 secondi sul file indicato.</p></div><code>sudo bash wifiaudit.sh --auto-recover /percorso/cattura.22000 --auto-seconds 600</code><button class="copy-button" data-copy="sudo bash wifiaudit.sh --auto-recover /percorso/cattura.22000 --auto-seconds 600">Copia</button></article>
+        <article class="command"><div><h3>Riprendere una sessione</h3><p>Salta le fasi completate se input, wordlist e impostazioni coincidono.</p></div><code>sudo bash wifiaudit.sh --resume /percorso/session_...</code><button class="copy-button" data-copy="sudo bash wifiaudit.sh --resume /percorso/session_...">Copia</button></article>
+        <article class="command"><div><h3>Installare il collegamento</h3><p>Aggiunge WiFiAudit al menu applicazioni dell'utente.</p></div><code>./avvia_pannello.sh --install</code><button class="copy-button" data-copy="./avvia_pannello.sh --install">Copia</button></article>
+        <article class="command"><div><h3>Archivi ZIP, 7z e RAR</h3><p>Installa compressione ZIP/7z e l'estrattore multiformato Unar.</p></div><code>sudo apt install zip unzip 7zip unar</code><button class="copy-button" data-copy="sudo apt install zip unzip 7zip unar">Copia</button></article>
+        <article class="command"><div><h3>Strumenti PDF</h3><p>Aggiunge visualizzazione, testo, immagini, unione e trasformazione PDF.</p></div><code>sudo apt install poppler-utils qpdf ghostscript evince</code><button class="copy-button" data-copy="sudo apt install poppler-utils qpdf ghostscript evince">Copia</button></article>
+        <article class="command"><div><h3>Documenti DOC e DOCX</h3><p>LibreOffice Writer apre e modifica DOCX; Pandoc converte numerosi formati.</p></div><code>sudo apt install libreoffice-writer pandoc antiword</code><button class="copy-button" data-copy="sudo apt install libreoffice-writer pandoc antiword">Copia</button></article>
+        <article class="command"><div><h3>Analisi testuale catture</h3><p>Mostra le opzioni di tcpdump senza catturare traffico.</p></div><code>tcpdump --help</code><button class="copy-button" data-copy="tcpdump --help">Copia</button></article>
+        <article class="command"><div><h3>Verifica accelerazione Hashcat</h3><p>Elenca i backend OpenCL/CUDA riconosciuti; non avvia un recupero.</p></div><code>hashcat -I</code><button class="copy-button" data-copy="hashcat -I">Copia</button></article>
+        <article class="command"><div><h3>Elenco wordlist Kali</h3><p>Mostra i dizionari disponibili senza modificarli.</p></div><code>find /usr/share/wordlists -maxdepth 2 -type f -printf '%p\n'</code><button class="copy-button" data-copy="find /usr/share/wordlists -maxdepth 2 -type f -printf '%p\n'">Copia</button></article>
+      </div>
+      <details class="sudo-help"><summary>Cosa cambia con sudo?</summary><p><code>sudo</code> esegue solo quel comando con privilegi amministrativi. Mentre digiti la password non compaiono caratteri: è normale. Il pannello usa <code>sudo -k</code>, quindi forza una nuova richiesta e non riceve né registra la password.</p></details>
+    </section>
+
+    <section class="section-block" id="risorse">
+      <div class="section-heading"><div><p class="eyebrow magenta">KNOWLEDGE BASE</p><h2>Risorse utili</h2></div><span class="muted">Link ufficiali</span></div>
+      <div class="resource-grid">
+        <a class="resource-card" href="https://gchq.github.io/CyberChef/" target="_blank" rel="noopener noreferrer"><h3>CyberChef ↗</h3><p>Codifica, decodifica e analisi di dati con ricette visuali.</p></a>
+        <a class="resource-card" href="https://gtfobins.org/" target="_blank" rel="noopener noreferrer"><h3>GTFOBins ↗</h3><p>Riferimento per valutare i rischi dei binari Unix in configurazioni improprie.</p></a>
+        <a class="resource-card" href="https://explainshell.com/" target="_blank" rel="noopener noreferrer"><h3>explainshell ↗</h3><p>Spiega opzioni e argomenti dei comandi shell.</p></a>
+        <a class="resource-card" href="https://book.hacktricks.wiki/" target="_blank" rel="noopener noreferrer"><h3>HackTricks ↗</h3><p>Wiki tecnica per studio e verifiche di sicurezza.</p></a>
+        <a class="resource-card" href="https://cheatsheetseries.owasp.org/" target="_blank" rel="noopener noreferrer"><h3>OWASP Cheat Sheets ↗</h3><p>Schede per sviluppo sicuro, autenticazione, log e protezione delle applicazioni.</p></a>
+      </div>
+      <details class="sudo-help"><summary>Repository di riferimento per WiFiAudit</summary><p><a href="https://github.com/kimocoder/wifite2" target="_blank" rel="noopener noreferrer">Wifite2</a> · <a href="https://github.com/v1s1t0r1sh3r3/airgeddon" target="_blank" rel="noopener noreferrer">airgeddon</a> · <a href="https://github.com/cumakurt/wifiangel" target="_blank" rel="noopener noreferrer">WiFiAngel</a> · <a href="https://github.com/mjkozicki/signal-atlas" target="_blank" rel="noopener noreferrer">Signal Atlas</a> · <a href="https://github.com/amibhai/wifi_down" target="_blank" rel="noopener noreferrer">wifi_down</a> · <a href="https://github.com/kismetwireless/kismet" target="_blank" rel="noopener noreferrer">Kismet</a></p></details>
+      <details class="sudo-help"><summary>Schede ufficiali Kali degli strumenti</summary><p><a href="https://www.kali.org/tools/aircrack-ng/" target="_blank" rel="noopener noreferrer">Aircrack-ng</a> · <a href="https://www.kali.org/tools/hcxtools/" target="_blank" rel="noopener noreferrer">hcxtools</a> · <a href="https://www.kali.org/tools/wifite/" target="_blank" rel="noopener noreferrer">Wifite</a> · <a href="https://www.kali.org/tools/tcpdump/" target="_blank" rel="noopener noreferrer">tcpdump</a> · <a href="https://www.kali.org/tools/pixiewps/" target="_blank" rel="noopener noreferrer">Pixiewps</a> · <a href="https://www.kali.org/tools/bettercap/" target="_blank" rel="noopener noreferrer">Bettercap</a> · <a href="https://www.kali.org/tools/fern-wifi-cracker/" target="_blank" rel="noopener noreferrer">Fern</a> · <a href="https://www.kali.org/tools/mdk4/" target="_blank" rel="noopener noreferrer">MDK4</a></p></details>
+      <details class="sudo-help"><summary>Strumenti esclusi o solo informativi</summary><p><strong>Pyrit</strong> non viene proposto: Kali lo ha rimosso nel 2020 perché basato su Python 2. Fluxion, Hakku e progetti non presenti nei repository configurati non vengono installati automaticamente. Questo evita script obsoleti, repository esterni e dipendenze non verificate.</p></details>
+    </section>
+    <section class="section-block"><div class="section-heading"><div><p class="eyebrow">STATO</p><h2>Ambiente locale</h2></div><button id="refreshBtn" class="link-button">Aggiorna</button></div><div id="toolGrid" class="tool-grid" aria-live="polite"></div></section>
+    <section class="activity" aria-live="polite"><span class="activity-dot" aria-hidden="true"></span><span id="activityText">Pannello pronto.</span></section>
+  </main>
+
+  <footer><span>Server solo locale · nessuna telemetria</span><button class="link-button danger" data-action="shutdown">Chiudi pannello</button></footer>
+  <script src="./app.js?v=1.7.0" defer></script>
+  <script src="./dashboard-ui.js?v=1.7.0" defer></script>
+</body>
+</html>
